@@ -1,5 +1,5 @@
 {
-    "id": "55e2fa3b-d8ec-4180-aba4-d44a99b02950",
+    "id": "cee54378-e635-490b-8ab0-908ed73d7eba",
     "name": "azurePolicy",
     "friendlyName": "Azure Policy",
     "description": "Use this release task to upload, assign and remove custom Azure policy definitions and initiatives in subscriptions or Management Groups.",
@@ -9,11 +9,11 @@
         "Build",
         "Release"
     ],
-    "author": "IgniteOne",
+    "author": "Rogier Dijkman",
     "version": {
         "Major": 0,
         "Minor": 0,
-        "Patch": 95
+        "Patch": 1
     },
     "preview": "true",
     "demands": [
