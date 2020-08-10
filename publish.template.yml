@@ -1,0 +1,90 @@
+# Pipeline template to deploy Azure DevOps tasks to an organization
+
+parameters:
+- name: productName
+  displayName: 'Product name (folder name)'
+  type: string
+- name: productVersion
+  displayName: 'Product version (folder name)'
+  type: string
+  default: ''
+- name: environment
+  displayName: 'Environment'
+  type: string
+  values: ['Development (io-core)','Production (io-core and IgniteOne)']
+  default: 'Development (io-core)'
+
+jobs:
+- job: Development
+  condition: and(succeeded(), eq('${{ parameters.environment }}', 'Development (io-core)'))
+  steps:
+  - task: PowerShell@2
+    displayName: 'Copy common files'
+    inputs:
+      targetType: 'inline'
+      script: |
+        $versionFolder = "$(System.DefaultWorkingDirectory)/${{ parameters.productName }}/versions"
+        $taskHasMultipleVersions = Test-Path -Path $versionFolder
+        if ($taskHasMultipleVersions) {
+          Write-Output "Copying the shared files to each subfolder in '$versionFolder'."
+          $versionFolders = Get-ChildItem -Path $versionFolder
+          foreach ($folder in $versionFolders) {
+              Write-Output "Copying '$(System.DefaultWorkingDirectory)/SharedFiles/*' to '$($folder.FullName)'."
+              Copy-Item -Path "$(System.DefaultWorkingDirectory)/SharedFiles/*" -Destination $folder.FullName -Force -Recurse
+          }
+        }
+        else {
+          $destinationFolder = "$(System.DefaultWorkingDirectory)/${{ parameters.productName }}/${{ parameters.productVersion }}"
+          Write-Output "Copying '$(System.DefaultWorkingDirectory)/SharedFiles/*' to '$destinationFolder'."
+          Copy-Item -Path "$(System.DefaultWorkingDirectory)/SharedFiles/*" -Destination $destinationFolder -Force -Recurse
+        }
+
+  - task: TfxInstaller@2
+    displayName: 'Installing TFX'
+    inputs:
+      version: 'v0.7.x'
+
+  - task: PublishAzureDevOpsExtension@2
+    displayName: 'Publish to io-core'
+    inputs:
+      connectedServiceName: 'ABFNL AZ Extension Publishing'
+      rootFolder: ${{ parameters.productName }}
+      updateTasksVersion: false
+      shareWith: 'io-core'
+
+- job: Production
+  condition: and(succeeded(), eq('${{ parameters.environment }}', 'Production (io-core and IgniteOne)'))
+  steps:
+  - task: PowerShell@2
+    displayName: 'Copy common files'
+    inputs:
+      targetType: 'inline'
+      script: |
+        $versionFolder = "$(System.DefaultWorkingDirectory)/${{ parameters.productName }}/versions"
+        $taskHasMultipleVersions = Test-Path -Path $versionFolder
+        if ($taskHasMultipleVersions) {
+          Write-Output "Copying the shared files to each subfolder in '$versionFolder'."
+          $versionFolders = Get-ChildItem -Path $versionFolder
+          foreach ($folder in $versionFolders) {
+              Write-Output "Copying '$(System.DefaultWorkingDirectory)/SharedFiles/*' to '$($folder.FullName)'."
+              Copy-Item -Path "$(System.DefaultWorkingDirectory)/SharedFiles/*" -Destination $folder.FullName -Force -Recurse
+          }
+        }
+        else {
+          $destinationFolder = "$(System.DefaultWorkingDirectory)/${{ parameters.productName }}/${{ parameters.productVersion }}"
+          Write-Output "Copying '$(System.DefaultWorkingDirectory)/SharedFiles/*' to '$destinationFolder'."
+          Copy-Item -Path "$(System.DefaultWorkingDirectory)/SharedFiles/*" -Destination $destinationFolder -Force -Recurse
+        }
+
+  - task: TfxInstaller@2
+    displayName: 'Installing TFX'
+    inputs:
+      version: 'v0.7.x'
+
+  - task: PublishAzureDevOpsExtension@2
+    displayName: 'Publish to io-core and Ignite One'
+    inputs:
+      connectedServiceName: 'ABFNL AZ Extension Publishing'
+      rootFolder: ${{ parameters.productName }}
+      updateTasksVersion: false
+      shareWith: 'io-core,IgniteOne'

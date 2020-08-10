@@ -1,0 +1,21 @@
+# Pipeline to deploy Azure DevOps tasks to an organization
+
+name: $(Date:yyyyMMdd)-$(SourceBranchName)-$(Rev:rr)
+
+trigger: none
+
+parameters:
+- name: environment
+  displayName: 'Environment'
+  type: string
+  values: ['Development (io-core)','Production (io-core and IgniteOne)']
+  default: 'Development (io-core)'
+
+stages:
+- stage: Deployment
+  jobs:
+  - template: '/publish.template.yml'
+    parameters:
+      productName: 'Policy'
+      productVersion: 'v1'
+      environment: '${{ parameters.environment }}'
