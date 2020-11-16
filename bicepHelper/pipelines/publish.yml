@@ -1,0 +1,21 @@
+# Pipeline to deploy Azure DevOps tasks to an organization
+
+name: $(Date:yyyyMMdd)-$(SourceBranchName)-$(Rev:rr)
+
+trigger: none
+
+parameters:
+- name: environment
+  displayName: 'Environment'
+  type: string
+  values: ['Development (Azurekid)','Production (Azurekid and public)']
+  default: 'Development (Azurekid)'
+
+stages:
+- stage: Deployment
+  jobs:
+  - template: '/publish.template.yml'
+    parameters:
+      productName: 'bicepHelper'
+      productVersion: 'v0'
+      environment: '${{ parameters.environment }}'

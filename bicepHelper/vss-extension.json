@@ -1,0 +1,42 @@
+{
+    "manifestVersion": 1,
+    "id": "bicepHelper",
+    "version": "0.1.0",
+    "name": "Bicep Helper",
+    "description": "Azure DevOps release task to validate if the latest API version is used in the bicep files",
+    "publisher": "Azurekid",
+    "public": true,
+    "targets": [{
+            "id": "Microsoft.VisualStudio.Services.Cloud"
+    }],
+    "icons": {
+        "default": "images/icon.png"
+    },
+    "categories": [
+        "Azure pipelines"
+    ],
+    "tags": [
+        "Azure",
+        "Cloud"
+    ],
+    "contributions": [
+        {
+            "id": "v1",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "v0"
+            }
+        }
+    ],
+    "scopes": [
+        "vso.code"
+    ],
+    "files": [
+        {
+            "path": "v0"
+        }
+    ]
+}

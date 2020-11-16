@@ -1,0 +1,97 @@
+{
+    "id": "a202d597-8bef-499a-b992-a5762350b8b2",
+    "name": "bicepHelper",
+    "friendlyName": "bicep Helper",
+    "description": "Use this release task to validate the api versions used in the bicep files.",
+    "helpMarkDown": "Use this release task to validate the api versions used in the bicep files.",
+    "category": "Deploy, Azure Pipelines",
+    "visibility": [
+        "Build",
+        "Release"
+    ],
+    "author": "Rogier Dijkman",
+    "version": {
+        "Major": 0,
+        "Minor": 1,
+        "Patch": 0
+    },
+    "galleryFlags": [
+        "Preview"
+    ],
+    "demands": [
+        "azureps"
+    ],
+    "instanceNameFormat": "Validate API versions",
+    "groups": [
+        {
+            "name": "AzureDetails",
+            "displayName": "Azure Context Details",
+            "isExpanded": true
+        },
+        {
+            "name": "BicepDetails",
+            "displayName": "File Details",
+            "isExpanded": true
+        }
+    ],
+    "inputs": [
+        {
+            "name": "ConnectedServiceName",
+            "aliases": [
+                "azureSubscription"
+            ],
+            "type": "connectedService:AzureRM",
+            "label": "Azure service connection",
+            "defaultValue": "",
+            "required": true,
+            "groupName": "AzureDetails",
+            "helpMarkDown": "Select the Azure Resource Manager connection used for deployment actions."
+        },
+        {
+            "name": "BicepLocation",
+            "type": "pickList",
+            "label": "Bicep location",
+            "required": true,
+            "defaultValue": "",
+            "groupName": "BicepDetails",
+            "options": {
+                "linked": "Linked artifact",
+                "url": "URL"
+            }
+        },
+        {
+            "name": "BicepFileLink",
+            "type": "filePath",
+            "label": "Link to Bicep(s)",
+            "defaultValue": "",
+            "required": true,
+            "groupName": "BicepDetails",
+            "helpMarkDown": "Specify the path or a pattern pointing for the bicep file for the Azure Resource Manager template.",
+            "visibleRule": "BicepLocation = linked"
+        },
+        {
+            "name": "BicepFileUrl",
+            "type": "string",
+            "label": "URL to Bicep(s)",
+            "defaultValue": "",
+            "required": true,
+            "groupName": "BicepDetails",
+            "helpMarkDown": "Specify the URL of the Bicep file. Example: [https://raw.githubusercontent.com/Azure/...](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/bicep/initiative-tagging.bicep) \n\nTo use a file stored in a private storage account, retrieve and include the shared access signature (SAS) token in the URL of the Bicep file. Example: `<blob_storage_url>/initiative.bicep?<SAStoken>` To upload a parameters file to a storage account and generate a SAS token, you could use [Azure file copy](https://aka.ms/azurefilecopyreadme) task or follow the steps using [PowerShell](https://go.microsoft.com/fwlink/?linkid=838080) or [Azure CLI](https://go.microsoft.com/fwlink/?linkid=836911). \n\nTo  view the Bicep template parameters in a grid, click on “…” next to Override template parameters text box. This feature requires that CORS rules are enabled at the source. If Bicep templates are in Azure storage blob, refer to [this](https://docs.microsoft.com/en-us/rest/api/storageservices/fileservices/Cross-Origin-Resource-Sharing--CORS--Support-for-the-Azure-Storage-Services?redirectedfrom=MSDN#understanding-cors-requests) to enable CORS.",
+            "visibleRule": "BicepLocation = url"
+        },
+        {
+            "name": "Preview",
+            "type": "boolean",
+            "label": "Validate against the preview API versions",
+            "defaultValue": "false",
+            "required": true,
+            "groupName": "BicepDetails",
+            "helpMarkDown": "Validate against the preview API versions."
+        }
+    ],
+    "execution": {
+        "PowerShell3": {
+            "target": "Invoke-ProductTask.ps1"
+        }
+    }
+}
