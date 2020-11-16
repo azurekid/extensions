@@ -1,0 +1,41 @@
+{
+    "manifestVersion": 1,
+    "id": "azPolicy",
+    "version": "0.0.2",
+    "name": "Azure Policies",
+    "description": "Azure DevOps release task for deployment of Azure resources",
+    "publisher": "Azurekid",
+    "targets": [{
+            "id": "Microsoft.VisualStudio.Services.Cloud"
+    }],
+    "icons": {
+        "default": "images/icon.png"
+    },
+    "categories": [
+        "Azure pipelines"
+    ],
+    "tags": [
+        "Azure",
+        "Cloud"
+    ],
+    "contributions": [
+        {
+            "id": "v1",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "v1"
+            }
+        }
+    ],
+    "scopes": [
+        "vso.code"
+    ],
+    "files": [
+        {
+            "path": "v1"
+        }
+    ]
+}

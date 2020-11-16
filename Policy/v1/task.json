@@ -1,0 +1,313 @@
+{
+    "id": "cee54378-e635-490b-8ab0-908ed73d7eba",
+    "name": "azPolicy",
+    "friendlyName": "Azure Policy",
+    "description": "Use this release task to upload, assign and remove custom Azure policy definitions and initiatives in subscriptions or Management Groups.",
+    "helpMarkDown": "Use this release task to upload, assign and remove custom Azure policy definitions and initiatives in subscriptions or Management Groups.",
+    "category": "Deploy, Azure Pipelines",
+    "visibility": [
+        "Build",
+        "Release"
+    ],
+    "author": "Rogier Dijkman",
+    "version": {
+        "Major": 0,
+        "Minor": 0,
+        "Patch": 2
+    },
+    "galleryFlags": [
+        "Preview"
+    ],
+    "demands": [
+        "azureps"
+    ],
+    "instanceNameFormat": "$(action) Azure Policy to/from $(deploymentScope)",
+    "groups": [
+        {
+            "name": "AzureDetails",
+            "displayName": "Azure Context Details",
+            "isExpanded": true
+        },
+        {
+            "name": "ActionDetails",
+            "displayName": "Action Details",
+            "isExpanded": true
+        },
+        {
+            "name": "InitiativeDetails",
+            "displayName": "Policy Details",
+            "isExpanded": true,
+            "visibleRule": "policyType = initiative && action != remove"
+        },
+        {
+            "name": "DefinitionDetails",
+            "displayName": "Policy Details",
+            "isExpanded": true,
+            "visibleRule": "policyType = definition && action != remove"
+        },
+        {
+            "name": "AssignmentDetails",
+            "displayName": "Assignment Details",
+            "isExpanded": true,
+            "visibleRule": "policyType = initiative && action = assign"
+        },
+        {
+            "name": "PolicyRemoval",
+            "displayName": "Removal Details",
+            "isExpanded": true,
+            "visibleRule": "action = remove"
+        }
+    ],
+    "inputs": [
+        {
+            "name": "deploymentScope",
+            "type": "pickList",
+            "label": "Scope",
+            "defaultValue": "ManagementGroup",
+            "required": true,
+            "groupName": "AzureDetails",
+            "helpMarkDown": "Deployment scope of the upload and assignment. To know more about scopes, refer this [link](https://docs.microsoft.com/en-us/Azure/azure-resource-manager/resource-group-template-deploy-rest#deployment-scope)",
+            "options": {
+                "ManagementGroup": "Management Group",
+                "Subscription" : "Subscription",
+                "ResourceGroup" : "Resource Group"
+            }
+        },
+        {
+            "name": "connectedServiceName",
+            "aliases": [
+                "azureResourceManagerConnection"
+            ],
+            "type": "connectedService:AzureRM",
+            "label": "Azure Resource Manager connection",
+            "defaultValue": "",
+            "required": true,
+            "groupName": "AzureDetails",
+            "helpMarkDown": "Select the Azure Resource Manager Service Connection having access to the selected deployment scope.",
+            "properties": {
+                "EndpointFilterRule": "ScopeLevel = deploymentScope"
+            }
+        },
+        {
+            "name": "subscriptionName",
+            "aliases": [
+                "subscriptionId"
+            ],
+            "type": "pickList",
+            "label": "Subscription",
+            "required": true,
+            "groupName": "AzureDetails",
+            "helpMarkDown": "Select the Azure subscription",
+            "properties": {
+                "EditableOptions": "True"
+            },
+            "visibleRule": "deploymentScope != ManagementGroup"
+        },
+        {
+            "name": "resourceGroupName",
+            "type": "pickList",
+            "label": "Resource Group",
+            "required": true,
+            "groupName": "AzureDetails",
+            "helpMarkDown": "Provide the name of a Resource Group.",
+            "properties": {
+                "EditableOptions": "True"
+            },
+            "visibleRule": "deploymentScope = ResourceGroup"
+        },
+        {
+            "name": "action",
+            "type": "pickList",
+            "label": "Action",
+            "defaultValue": "upload",
+            "required": true,
+            "groupName": "ActionDetails",
+            "helpMarkDown": "Choose the action for the Azure Policy. Please choose carefully. Deletion of the Azure Policy can result in loss of control on the resources.",
+            "options": {
+                "upload": "Upload Azure Policy",
+                "assign": "Assign Azure Policy",
+                "remove": "Remove Azure Policy"
+            }
+        },
+        {
+            "name": "location",
+            "type": "pickList",
+            "label": "Location",
+            "defaultValue": "West Europe",
+            "required": true,
+            "groupName": "ActionDetails",
+            "helpMarkDown": "Location for deploying the Azure Policy definition or initiative.\n\nThis is needed for assigning the Managed Identity for the remediation steps.\n\n**Warning:** Cannot be changed after initial deployment.",
+            "properties": {
+                "EditableOptions": "True"
+            },
+            "visibleRule": "action = assign"
+        },
+        {
+            "name": "removeAssignment",
+            "type": "boolean",
+            "label": "Confirm to remove the policies assignments",
+            "defaultValue": "false",
+            "required": true,
+            "groupName": "PolicyRemoval",
+            "helpMarkDown": "Please confirm the removal of the Azure Policy assignments."
+        },
+        {
+            "name": "initiativeId",
+            "type": "string",
+            "label": "Definition Id of the policy initiative",
+            "defaultValue": "",
+            "required": true,
+            "groupName": "PolicyRemoval",
+            "helpMarkDown": "Enter the ID of the Initiative to remove"
+        },
+        {
+            "name": "policyType",
+            "type": "radio",
+            "label": "Policy type",
+            "required": true,
+            "defaultValue": "initiative",
+            "groupName": "ActionDetails",
+            "options": {
+                "initiative": "Initiative",
+                "definition": "Definition"
+            },
+            "helpMarkDown": "Select which type of policy you want to upload, assign or remove."
+        },
+        {
+            "name": "definitionLocation",
+            "type": "pickList",
+            "label": "Definition location",
+            "required": true,
+            "defaultValue": "",
+            "groupName": "DefinitionDetails",
+            "options": {
+                "linked": "Linked artifact",
+                "url": "URL"
+            }
+        },
+        {
+            "name": "definitionFileLink",
+            "type": "filePath",
+            "label": "Link to definition(s)",
+            "defaultValue": "",
+            "required": true,
+            "groupName": "DefinitionDetails",
+            "helpMarkDown": "Specify the path or a pattern pointing for the policy template file for the Azure Resource Manager template.",
+            "visibleRule": "definitionLocation = linked"
+        },
+        {
+            "name": "definitionFileUrl",
+            "type": "string",
+            "label": "URL to definition(s)",
+            "defaultValue": "",
+            "required": true,
+            "groupName": "DefinitionDetails",
+            "helpMarkDown": "Specify the URL of the policy template file. Example: [https://raw.githubusercontent.com/Azure/...](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/policies/policy-tagging.json) \n\nTo use a file stored in a private storage account, retrieve and include the shared access signature (SAS) token in the URL of the policy template. Example: `<blob_storage_url>/policy.json?<SAStoken>`. To upload a parameters file to a storage account and generate a SAS token, you could use [Azure file copy](https://aka.ms/azurefilecopyreadme) task or follow the steps using [PowerShell](https://go.microsoft.com/fwlink/?linkid=838080) or [Azure CLI](https://go.microsoft.com/fwlink/?linkid=836911). \n\nTo view the policy template parameters in a grid, click on “…” next to Override template parameters text box. This feature requires that CORS rules are enabled at the source. If policy templates are in Azure storage blob, refer to [this](https://docs.microsoft.com/en-us/rest/api/storageservices/fileservices/Cross-Origin-Resource-Sharing--CORS--Support-for-the-Azure-Storage-Services?redirectedfrom=MSDN#understanding-cors-requests) to enable CORS.",
+            "visibleRule": "definitionLocation = url"
+        },
+        {
+            "name": "initiativeLocation",
+            "type": "pickList",
+            "label": "Initiative location",
+            "required": true,
+            "defaultValue": "",
+            "groupName": "InitiativeDetails",
+            "options": {
+                "linked": "Linked artifact",
+                "url": "URL"
+            }
+        },
+        {
+            "name": "initiativeFileLink",
+            "type": "filePath",
+            "label": "Link to initiative(s)",
+            "defaultValue": "",
+            "required": true,
+            "groupName": "InitiativeDetails",
+            "helpMarkDown": "Specify the path or a pattern pointing for the initiative template file for the Azure Resource Manager template.",
+            "visibleRule": "initiativeLocation = linked"
+        },
+        {
+            "name": "initiativeFileUrl",
+            "type": "string",
+            "label": "URL to initiative(s)",
+            "defaultValue": "",
+            "required": true,
+            "groupName": "InitiativeDetails",
+            "helpMarkDown": "Specify the URL of the initiative template file. Example: [https://raw.githubusercontent.com/Azure/...](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/policies/initiative-tagging.json) \n\nTo use a file stored in a private storage account, retrieve and include the shared access signature (SAS) token in the URL of the initiative template. Example: `<blob_storage_url>/initiative.json?<SAStoken>` To upload a parameters file to a storage account and generate a SAS token, you could use [Azure file copy](https://aka.ms/azurefilecopyreadme) task or follow the steps using [PowerShell](https://go.microsoft.com/fwlink/?linkid=838080) or [Azure CLI](https://go.microsoft.com/fwlink/?linkid=836911). \n\nTo  view the initiative template parameters in a grid, click on “…” next to Override template parameters text box. This feature requires that CORS rules are enabled at the source. If initiative templates are in Azure storage blob, refer to [this](https://docs.microsoft.com/en-us/rest/api/storageservices/fileservices/Cross-Origin-Resource-Sharing--CORS--Support-for-the-Azure-Storage-Services?redirectedfrom=MSDN#understanding-cors-requests) to enable CORS.",
+            "visibleRule": "initiativeLocation = url"
+        },
+        {
+            "name": "initiativeHasParameters",
+            "type": "boolean",
+            "label": "Initiative(s) has parameters",
+            "defaultValue": "true",
+            "required": true,
+            "groupName": "AssignmentDetails",
+            "helpMarkDown": "Please select if the initiative(s) has parameters."
+        },
+        {
+            "name": "initiativeParametersLocation",
+            "type": "pickList",
+            "label": "Initiative parameters location",
+            "required": true,
+            "defaultValue": "",
+            "groupName": "AssignmentDetails",
+            "options": {
+                "linked": "Linked artifact",
+                "url": "URL"
+            },
+            "visibleRule": "initiativeHasParameters = true"
+        },
+        {
+            "name": "initiativeParameterFileLink",
+            "type": "filePath",
+            "label": "Link to initiative parameters",
+            "defaultValue": "",
+            "required": true,
+            "groupName": "AssignmentDetails",
+            "helpMarkDown": "Specify the path or a pattern pointing for the initiative template file for the Azure Resource Manager template.",
+            "visibleRule": "initiativeParametersLocation = linked"
+        },
+        {
+            "name": "initiativeParameterFileUrl",
+            "type": "string",
+            "label": "URL to initiative parameters",
+            "defaultValue": "",
+            "required": true,
+            "groupName": "AssignmentDetails",
+            "helpMarkDown": "Specify the URL of the initiative template file. Example: [https://raw.githubusercontent.com/Azure/...](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/policies/initiative-tagging.json) \n\nTo use a file stored in a private storage account, retrieve and include the shared access signature (SAS) token in the URL of the initiative template. Example: `<blob_storage_url>/initiative.json?<SAStoken>` To upload a parameters file to a storage account and generate a SAS token, you could use [Azure file copy](https://aka.ms/azurefilecopyreadme) task or follow the steps using [PowerShell](https://go.microsoft.com/fwlink/?linkid=838080) or [Azure CLI](https://go.microsoft.com/fwlink/?linkid=836911). \n\nTo  view the initiative template parameters in a grid, click on “…” next to Override template parameters text box. This feature requires that CORS rules are enabled at the source. If initiative templates are in Azure storage blob, refer to [this](https://docs.microsoft.com/en-us/rest/api/storageservices/fileservices/Cross-Origin-Resource-Sharing--CORS--Support-for-the-Azure-Storage-Services?redirectedfrom=MSDN#understanding-cors-requests) to enable CORS.",
+            "visibleRule": "initiativeParametersLocation = url"
+        }
+    ],
+    "dataSourceBindings": [
+        {
+            "target": "subscriptionName",
+            "endpointId": "$(connectedServiceName)",
+            "dataSourceName": "AzureSubscriptions",
+            "resultTemplate": "{ \"Value\" : \"{{{subscriptionId}}}\", \"DisplayValue\" : \"{{{displayName}}} ({{{subscriptionId}}})\" }"
+        },
+        {
+            "target": "resourceGroupName",
+            "endpointId": "$(connectedServiceName)",
+            "dataSourceName": "AzureResourceGroupsByExplicitSubscription",
+            "parameters": {
+                "subscriptionId": "$(subscriptionName)"
+            }
+        },
+        {
+            "target": "location",
+            "endpointId": "$(connectedServiceName)",
+            "dataSourceName": "AzureLocationsByDeploymentScope",
+            "parameters": {
+                "subscriptionId": "$(subscriptionName)",
+                "deploymentScope": "$(deploymentScope)"
+            }
+        }
+    ],
+    "execution": {
+        "PowerShell3": {
+            "target": "Invoke-ProductTask.ps1"
+        }
+    }
+}
